@@ -1,0 +1,12 @@
+version: "3"
+services:
+  db:
+    image: "postgres:11"
+    container_name: "sqlx-helloworld-db"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
