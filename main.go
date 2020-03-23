@@ -2,28 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
-	"net/http"
-	"time"
 )
-
-var schema = `
-CREATE TABLE person (
-    first_name text,
-    last_name text,
-    email text
-);
-
-CREATE TABLE place (
-    country text,
-    city text NULL,
-    telcode integer
-)`
 
 type Person struct {
 	FirstName string `db:"first_name"`
@@ -38,46 +21,32 @@ type Place struct {
 }
 
 func main() {
-	router := mux.NewRouter()
+	// START: Uncomment below to enable http
 
-	router.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
-		// an example API handler
-		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
-	})
+	//router := mux.NewRouter()
+	//
+	//router.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
+	//	// an example API handler
+	//	json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	//})
+	//
+	//srv := &http.Server{
+	//	Handler: router,
+	//	Addr:    "127.0.0.1:8000",
+	//	// Good practice: enforce timeouts for servers you create!
+	//	WriteTimeout: 15 * time.Second,
+	//	ReadTimeout:  15 * time.Second,
+	//}
+	//
+	//log.Fatal(srv.ListenAndServe())
 
-	srv := &http.Server{
-		Handler: router,
-		Addr:    "127.0.0.1:8000",
-		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
-	}
-
-	log.Fatal(srv.ListenAndServe())
+	// END: Uncomment below to enable http
 
 	// this Pings the database trying to connect, panics on error
 	db, err := sqlx.Connect("postgres", "user=postgres dbname=postgres password=password sslmode=disable")
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	// START: Uncomment below for the first run
-
-	// exec the schema or fail; multi-statement Exec behavior varies between
-	// database drivers;  pq will exec them all, sqlite3 won't, ymmv
-	//db.MustExec(schema)
-
-	//tx := db.MustBegin()
-	//tx.MustExec("INSERT INTO person (first_name, last_name, email) VALUES ($1, $2, $3)", "Jason", "Moiron", "jmoiron@jmoiron.net")
-	//tx.MustExec("INSERT INTO person (first_name, last_name, email) VALUES ($1, $2, $3)", "John", "Doe", "johndoeDNE@gmail.net")
-	//tx.MustExec("INSERT INTO place (country, city, telcode) VALUES ($1, $2, $3)", "United States", "New York", "1")
-	//tx.MustExec("INSERT INTO place (country, telcode) VALUES ($1, $2)", "Hong Kong", "852")
-	//tx.MustExec("INSERT INTO place (country, telcode) VALUES ($1, $2)", "Singapore", "65")
-	//// Named queries can use structs, so if you have an existing struct (i.e. person := &Person{}) that you have populated, you can pass it in as &person
-	//tx.NamedExec("INSERT INTO person (first_name, last_name, email) VALUES (:first_name, :last_name, :email)", &Person{"Jane", "Citizen", "jane.citzen@example.com"})
-	//tx.Commit()
-
-	// END: Uncomment below for the first run
 
 	// Query the database, storing results in a []Person (wrapped in []interface{})
 	people := []Person{}
