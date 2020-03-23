@@ -2,11 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
-	"log"
-
 	_ "github.com/lib/pq"
+	"log"
+	"net/http"
+	"time"
 )
 
 var schema = `
@@ -35,6 +38,23 @@ type Place struct {
 }
 
 func main() {
+	router := mux.NewRouter()
+
+	router.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
+		// an example API handler
+		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
+	srv := &http.Server{
+		Handler: router,
+		Addr:    "127.0.0.1:8000",
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+
+	log.Fatal(srv.ListenAndServe())
+
 	// this Pings the database trying to connect, panics on error
 	db, err := sqlx.Connect("postgres", "user=postgres dbname=postgres password=password sslmode=disable")
 	if err != nil {
